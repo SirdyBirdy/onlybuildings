@@ -1,0 +1,13 @@
+{
+  "name": "onlybuildings",
+  "version": "1.0.0",
+  "description": "Nothing but buildings.",
+  "private": true,
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.0",
+    "@supabase/supabase-js": "^2.45.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

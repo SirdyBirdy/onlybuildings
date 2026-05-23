@@ -1,0 +1,308 @@
+/* ─── RESET & BASE ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0e0e0e;
+  --fg: #f0ede6;
+  --accent: #c8b89a;
+  --danger: #c0392b;
+  --ok: #7daa6e;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body: 'Courier Prime', monospace;
+  --header-h: 52px;
+  --upload-btn-size: 52px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── HEADER ─── */
+header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: rgba(14,14,14,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(200,184,154,0.12);
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 0.06em;
+  color: var(--fg);
+  user-select: none;
+}
+
+.tagline {
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+  opacity: 0.7;
+}
+
+/* ─── UPLOAD BUTTON ─── */
+.upload-btn {
+  position: fixed;
+  bottom: 36px;
+  right: 36px;
+  z-index: 200;
+  width: var(--upload-btn-size);
+  height: var(--upload-btn-size);
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  background: var(--bg);
+  color: var(--accent);
+  font-size: 28px;
+  font-weight: 300;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.5);
+}
+.upload-btn:hover {
+  background: var(--accent);
+  color: var(--bg);
+  transform: scale(1.08);
+}
+
+/* ─── MODAL ─── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(10,10,10,0.88);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal {
+  background: #161616;
+  border: 1px solid rgba(200,184,154,0.18);
+  width: min(480px, 92vw);
+  padding: 32px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px; right: 18px;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 24px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+  font-family: var(--font-body);
+}
+.modal-close:hover { opacity: 1; }
+
+/* ─── DROP ZONE ─── */
+.drop-zone {
+  border: 1.5px dashed rgba(200,184,154,0.3);
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.drop-zone.dragover { border-color: var(--accent); }
+.drop-zone.has-preview { min-height: 240px; }
+
+.drop-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+  opacity: 0.55;
+  pointer-events: none;
+  padding: 24px;
+  text-align: center;
+}
+.drop-inner p { font-size: 15px; }
+.drop-inner span { font-size: 11px; letter-spacing: 0.1em; }
+
+.preview-img {
+  display: none;
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+}
+.preview-img.visible { display: block; }
+
+/* ─── STATUS ─── */
+.modal-status {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  min-height: 18px;
+  text-align: center;
+}
+.modal-status.checking { color: var(--accent); }
+.modal-status.ok { color: var(--ok); }
+.modal-status.error { color: var(--danger); }
+
+/* ─── SUBMIT BTN ─── */
+.submit-btn {
+  background: none;
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  padding: 12px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  text-transform: lowercase;
+}
+.submit-btn:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--bg);
+}
+.submit-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ─── MASONRY GRID ─── */
+.grid {
+  margin-top: var(--header-h);
+  padding: 20px 16px 120px;
+  columns: 4 240px;
+  column-gap: 10px;
+}
+
+.grid-item {
+  break-inside: avoid;
+  margin-bottom: 10px;
+  overflow: hidden;
+  cursor: zoom-in;
+  position: relative;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeUp 0.6s forwards;
+}
+
+.grid-item img {
+  width: 100%;
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.23,1,0.32,1);
+  filter: saturate(0.85);
+}
+.grid-item:hover img {
+  transform: scale(1.03);
+  filter: saturate(1);
+}
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Slow drift: each item gets a slightly different delay */
+.grid-item:nth-child(3n+1) { animation-delay: 0.05s; }
+.grid-item:nth-child(3n+2) { animation-delay: 0.15s; }
+.grid-item:nth-child(3n)   { animation-delay: 0.28s; }
+
+/* ─── LIGHTBOX ─── */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(8,8,8,0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.lightbox.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.lightbox img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.8);
+}
+.lightbox-close {
+  position: absolute;
+  top: 20px; right: 24px;
+  background: none;
+  border: none;
+  color: var(--fg);
+  font-size: 32px;
+  cursor: pointer;
+  opacity: 0.5;
+  font-family: var(--font-body);
+  transition: opacity 0.15s;
+}
+.lightbox-close:hover { opacity: 1; }
+
+/* ─── EMPTY STATE ─── */
+.empty-state {
+  position: fixed;
+  inset: 0;
+  top: var(--header-h);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: rgba(200,184,154,0.25);
+  pointer-events: none;
+}
+.empty-state .big { font-family: var(--font-display); font-size: clamp(48px, 10vw, 100px); }
+.empty-state .small { font-size: 12px; letter-spacing: 0.2em; }
+
+/* ─── LOADING SKELETON ─── */
+.skeleton {
+  break-inside: avoid;
+  margin-bottom: 10px;
+  background: #1a1a1a;
+  animation: shimmer 1.8s infinite;
+}
+@keyframes shimmer {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 600px) {
+  .tagline { display: none; }
+  .grid { columns: 2 140px; padding-bottom: 100px; }
+  .upload-btn { bottom: 24px; right: 24px; }
+}
