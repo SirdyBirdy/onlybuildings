@@ -1,6 +1,3 @@
-// netlify/functions/verify.js
-// Uses Google Gemini Flash (free tier) to verify building photos
-
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
@@ -18,13 +15,10 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: 'Missing fields' }) };
   }
 
-  const prompt = `You are a building verification system for a site called "Only Buildings".
+  console.log('Image size (base64 chars):', image.length);
+  console.log('Mime type:', mimeType);
 
-Does this image primarily show a building, structure, or architecture? 
-This includes houses, skyscrapers, churches, ruins, warehouses, bridges, towers, stadiums — any human-made structure. Be lenient — if significant architecture is visible, say true.
-
-Respond ONLY with valid JSON, no markdown:
-{"isBuilding": true} or {"isBuilding": false, "reason": "short lowercase explanation"}`;
+  const prompt = `Look at this image. Does it contain any building, structure, or architecture at all — even partially? A house, office, wall, facade, ruin, bridge, tower, shed, or any constructed structure counts. Answer only with JSON, no markdown: {"isBuilding": true} or {"isBuilding": false, "reason": "brief lowercase reason"}`;
 
   try {
     const res = await fetch(
@@ -35,8 +29,8 @@ Respond ONLY with valid JSON, no markdown:
         body: JSON.stringify({
           contents: [{
             parts: [
-              { text: prompt },
-              { inline_data: { mime_type: mimeType, data: image } }
+              { inline_data: { mime_type: mimeType, data: image } },
+              { text: prompt }
             ]
           }],
           generationConfig: { maxOutputTokens: 100, temperature: 0 }
@@ -45,14 +39,22 @@ Respond ONLY with valid JSON, no markdown:
     );
 
     const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '{}';
-    
+    console.log('Gemini full response:', JSON.stringify(data));
+
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '{}';
+    console.log('Gemini raw text:', raw);
+
+    const text = raw.replace(/```json|```/g, '').trim();
+
     let result;
     try {
       result = JSON.parse(text);
     } catch {
-      result = { isBuilding: false, reason: 'could not verify the image.' };
+      console.log('JSON parse failed on:', text);
+      result = { isBuilding: true }; // if we can't parse, let it through
     }
+
+    console.log('Final result:', JSON.stringify(result));
 
     return {
       statusCode: 200,
