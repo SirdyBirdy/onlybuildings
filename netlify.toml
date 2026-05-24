@@ -28,3 +28,9 @@
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+[context.production]
+  SECRETS_SCAN_OMIT_KEYS = "CLOUDINARY_UPLOAD_PRESET"
