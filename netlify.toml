@@ -5,6 +5,9 @@
 [functions]
   node_bundler = "esbuild"
 
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "CLOUDINARY_UPLOAD_PRESET"
+
 [[headers]]
   for = "/*"
   [headers.values]
@@ -23,14 +26,7 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Redirect /api/* to functions for cleaner URLs (optional)
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
-[build]
-  publish = "public"
-  functions = "netlify/functions"
-
-[context.production]
-  SECRETS_SCAN_OMIT_KEYS = "CLOUDINARY_UPLOAD_PRESET"
