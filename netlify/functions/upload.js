@@ -2,22 +2,20 @@
 const https = require('https');
 const { createClient } = require('@supabase/supabase-js');
 
-function cloudinaryUpload(base64, mimeType) {
+function cloudinaryUpload(base64) {
   return new Promise((resolve, reject) => {
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
     const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
 
-    const dataURI = `data:${mimeType};base64,${base64}`;
     const payload = JSON.stringify({
-      file: dataURI,
+      file: base64,
       upload_preset: uploadPreset,
       public_id: `ob${Date.now()}`,
-      resource_type: 'image',
     });
 
     const options = {
       hostname: 'api.cloudinary.com',
-      path: `/v1_1/${cloudName}/image/upload`,
+      path: `/v1_1/${cloudName}/auto/upload`,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -31,7 +29,7 @@ function cloudinaryUpload(base64, mimeType) {
       res.on('end', () => {
         try {
           const parsed = JSON.parse(data);
-          console.log('Cloudinary response:', JSON.stringify(parsed));
+          console.log('Cloudinary response:', JSON.stringify(parsed).slice(0, 300));
           if (parsed.secure_url) resolve(parsed.secure_url);
           else reject(new Error(parsed.error?.message || 'Cloudinary upload failed'));
         } catch (e) {
@@ -64,7 +62,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const imageUrl = await cloudinaryUpload(image, mimeType);
+    const imageUrl = await cloudinaryUpload(image);
 
     const supabase = createClient(
       process.env.SUPABASE_URL,
