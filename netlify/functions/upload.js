@@ -11,7 +11,8 @@ function cloudinaryUpload(base64, mimeType) {
     const payload = JSON.stringify({
       file: dataURI,
       upload_preset: uploadPreset,
-      public_id: `ob_${Date.now()}`,
+      public_id: `ob${Date.now()}`,
+      resource_type: 'image',
     });
 
     const options = {
