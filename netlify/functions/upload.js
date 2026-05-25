@@ -1,19 +1,19 @@
 // netlify/functions/upload.js
 // Uploads a verified building photo to Cloudinary and stores the URL in Supabase
-
 const https = require('https');
 const { createClient } = require('@supabase/supabase-js');
 
 function cloudinaryUpload(base64, mimeType) {
   return new Promise((resolve, reject) => {
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET; // unsigned preset
+    const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
 
     const dataURI = `data:${mimeType};base64,${base64}`;
     const payload = JSON.stringify({
       file: dataURI,
       upload_preset: uploadPreset,
       folder: 'onlybuildings',
+      public_id: Date.now().toString(),
     });
 
     const options = {
@@ -64,10 +64,8 @@ exports.handler = async (event) => {
   }
 
   try {
-    // 1. Upload to Cloudinary
     const imageUrl = await cloudinaryUpload(image, mimeType);
 
-    // 2. Save URL to Supabase
     const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_SERVICE_KEY
@@ -79,7 +77,6 @@ exports.handler = async (event) => {
 
     if (error) {
       console.error('Supabase insert error:', error);
-      // Still return the URL even if DB write fails — not ideal but graceful
     }
 
     return {
