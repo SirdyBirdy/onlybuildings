@@ -1,8 +1,3 @@
-// netlify/functions/upload.js
-// Uploads a verified building photo to Cloudinary and stores the URL in Supabase
-const https = require('https');
-const { createClient } = require('@supabase/supabase-js');
-
 function cloudinaryUpload(base64, mimeType) {
   return new Promise((resolve, reject) => {
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
@@ -12,8 +7,7 @@ function cloudinaryUpload(base64, mimeType) {
     const payload = JSON.stringify({
       file: dataURI,
       upload_preset: uploadPreset,
-      folder: 'onlybuildings',
-      public_id: Date.now().toString(),
+      public_id: `ob_${Date.now()}`,
     });
 
     const options = {
@@ -32,6 +26,7 @@ function cloudinaryUpload(base64, mimeType) {
       res.on('end', () => {
         try {
           const parsed = JSON.parse(data);
+          console.log('Cloudinary response:', JSON.stringify(parsed));
           if (parsed.secure_url) resolve(parsed.secure_url);
           else reject(new Error(parsed.error?.message || 'Cloudinary upload failed'));
         } catch (e) {
@@ -45,50 +40,3 @@ function cloudinaryUpload(base64, mimeType) {
     req.end();
   });
 }
-
-exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
-  }
-
-  let body;
-  try {
-    body = JSON.parse(event.body);
-  } catch {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) };
-  }
-
-  const { image, mimeType } = body;
-  if (!image || !mimeType) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Missing fields' }) };
-  }
-
-  try {
-    const imageUrl = await cloudinaryUpload(image, mimeType);
-
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_KEY
-    );
-
-    const { error } = await supabase
-      .from('photos')
-      .insert([{ url: imageUrl, submitted_at: new Date().toISOString() }]);
-
-    if (error) {
-      console.error('Supabase insert error:', error);
-    }
-
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: imageUrl }),
-    };
-  } catch (err) {
-    console.error('Upload error:', err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Upload failed', details: err.message }),
-    };
-  }
-};
